@@ -1,0 +1,37 @@
+name: Autograding Tests
+'on':
+- push
+- workflow_dispatch
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Test Divisors
+      id: test-divisors
+      uses: education/autograding-python-grader@v1
+      with:
+        timeout: 10
+        max-score: 50
+        setup-command: sudo -H pip3 install pytest
+    - name: Test perfectNumber
+      id: test-perfectnumber
+      uses: education/autograding-python-grader@v1
+      with:
+        timeout: 10
+        max-score: 50
+        setup-command: sudo -H pip3 install pytest
+    - name: Autograding Reporter
+      uses: education/autograding-grading-reporter@v1
+      env:
+        TEST-DIVISORS_RESULTS: "${{steps.test-divisors.outputs.result}}"
+        TEST-PERFECTNUMBER_RESULTS: "${{steps.test-perfectnumber.outputs.result}}"
+      with:
+        runners: test-divisors,test-perfectnumber
